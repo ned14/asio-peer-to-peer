@@ -10,7 +10,9 @@ from program import Program
 source_directory = 'source'
 
 sources = [
-	'main.cpp'	
+	'claim.cpp',
+	'leader_selection.cpp',
+	'main.cpp',
 ]
 
 programs = [

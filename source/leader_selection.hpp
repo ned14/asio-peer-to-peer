@@ -12,9 +12,7 @@
 #include <random>
 #include <vector>
 
-enum class Claim {
-	leader, follower, undecided
-};
+#include "claim.hpp"
 
 class Node {
 };
