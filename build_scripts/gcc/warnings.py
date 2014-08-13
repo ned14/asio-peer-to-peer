@@ -96,4 +96,5 @@ warnings = [
 	'-Wzero-as-null-pointer-constant',
 	'-Werror',
 	'-Wno-unused',
+	'-Wno-unused-parameter',
 ]

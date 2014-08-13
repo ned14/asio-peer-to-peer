@@ -36,4 +36,5 @@ warnings = [
 	'-Wno-switch-enum',
 	'-Wno-unused-member-function',
 	'-Wno-unused',
+	'-Wno-unused-parameter',
 ]
