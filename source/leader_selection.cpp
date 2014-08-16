@@ -18,7 +18,7 @@
 
 namespace {
 
-using ScoreDistribution = std::uniform_real_distribution<Score>;
+using ScoreDistribution = std::uniform_int_distribution<Score>;
 
 using Contenders = std::vector<std::reference_wrapper<Node>>;
 
@@ -72,7 +72,7 @@ void remove_followers(Contenders & contenders) {
 }	// namespace
 
 Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engine) {
-	ScoreDistribution distribution(0.0, std::nextafter(1.0, std::numeric_limits<Score>::max()));
+	ScoreDistribution distribution(std::numeric_limits<Score>::min(), std::numeric_limits<Score>::max());
 	Contenders contenders(neighbors.begin(), neighbors.end());
 	while (true) {
 		Score const my_score = distribution(random_engine);

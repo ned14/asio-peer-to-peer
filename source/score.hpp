@@ -8,6 +8,8 @@
 #ifndef ASIO_PEER_TO_PEER_SCORE_HPP
 #define ASIO_PEER_TO_PEER_SCORE_HPP
 
-using Score = double;
+#include <cstdint>
+
+using Score = std::uint32_t;
 
 #endif // ASIO_PEER_TO_PEER_SCORE_HPP
