@@ -13,16 +13,14 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/write.hpp>
 
-#include "claim.hpp"
-#include "enable_if.hpp"
-
 class Node {
 public:
 	Node(boost::asio::ip::tcp::socket socket):
 		m_socket(std::move(socket)) {
 	}
-	template<typename T, EnableIf<std::is_arithmetic<T>::value> = dummy>
+	template<typename T>
 	void send(T const number) {
+		static_assert(std::is_integral<T>::value, "Can only send integer values.");
 		// TODO: endian conversions
 		boost::asio::write(m_socket, boost::asio::buffer(&number, sizeof(number)));
 	}
