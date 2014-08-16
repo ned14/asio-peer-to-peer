@@ -23,14 +23,14 @@ using ScoreDistribution = std::uniform_int_distribution<Score>;
 using Contenders = std::vector<std::reference_wrapper<Node>>;
 
 void send_score(Contenders const & contenders, Score const my_score) {
-	for (auto contender : contenders) {
-		contender.get().send(my_score);
+	for (Node & contender : contenders) {
+		contender.send(my_score);
 	}
 }
 
 void send_claim(Contenders const & contenders, Claim const claim) {
-	for (auto contender : contenders) {
-		contender.get().send(static_cast<std::uint8_t>(claim));
+	for (Node & contender : contenders) {
+		contender.send(static_cast<std::uint8_t>(claim));
 	}
 }
 
@@ -46,39 +46,28 @@ bool lower_score_than_all_contenders(Contenders const & contenders, Score const 
 	return my_score <= boost::accumulate(contenders, std::numeric_limits<Score>::max(), least_score);
 }
 
-bool received_claim_of_leader(Contenders const & contenders) {
-	bool any_are_leader = false;
+bool received_claim(Contenders const & contenders, Claim const claim) {
+	bool any_sent_claim = false;
 	for (Node & node : contenders) {
 		node.receive_claim();
-		if (node.claim() == Claim::leader) {
-			any_are_leader = true;
+		if (node.claim() == claim) {
+			any_sent_claim = true;
 		}
 	}
-	return any_are_leader;
+	return any_sent_claim;
 }
 
-void force_revote(Contenders const & contenders) {
-}
-
-bool received_revote_request(Contenders const & contenders) {
-	return false;
-}
-
+// TODO: Should this force a revote among all of my neighbors, or just those
+// still considered contenders?
 void handle_conflicting_leader_claims(Contenders const & contenders) {
-	// TODO: Should this force a revote among all of my neighbors, or just those
-	// still considered contenders?
-	force_revote(contenders);
+	send_claim(contenders, Claim::force_revote);
 	// We have to wait for all of our contenders to possibly also request a
 	// revote so that we can ensure there are no timing issues. If we just sent
 	// out our request for a revote, someone else may have done the same thing,
 	// but we would take their revote request to be part of the next set of
 	// messages. This keeps everything in sync, even though we don't care about
 	// the result.
-	received_revote_request(contenders);
-	
-	// TODO: If we force a revote among all of our neighbors, we need to add a
-	// line like this
-	// contenders.assign(neighbors.begin(), neighbors.end());
+	received_claim(contenders, Claim::force_revote);
 }
 
 void remove_followers(Contenders & contenders) {
@@ -93,27 +82,27 @@ Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engi
 	while (true) {
 		Score const my_score = distribution(random_engine);
 		send_score(contenders, my_score);
-
 		bool const is_leader = lower_score_than_all_contenders(contenders, my_score);
+
 		send_claim(contenders, is_leader ? Claim::leader : Claim::undecided);
-		
-		bool const is_follower = received_claim_of_leader(contenders);
+		bool const is_follower = received_claim(contenders, Claim::leader);
+
 		if (is_follower and is_leader) {
 			handle_conflicting_leader_claims(contenders);
 			continue;
 		}
-
 		// I cannot break out here because someone else may force a revote.
 		send_claim(contenders, is_follower ? Claim::follower : Claim::undecided);
+		bool const revote_requested = received_claim(contenders, Claim::force_revote);
 		
-		bool const revote_requested = received_revote_request(contenders);
-		
-		if (not revote_requested and is_leader) {
+		if (revote_requested) {
+			continue;
+		}
+		if (is_leader) {
 			return Claim::leader;
-		} else if (not revote_requested and is_follower) {
+		} else if (is_follower) {
 			return Claim::follower;
 		} else {
-			// No need to remove leaders, since I know no neighbors are leaders
 			remove_followers(contenders);
 		}
 	}

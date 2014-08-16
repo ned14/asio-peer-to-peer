@@ -9,7 +9,7 @@
 #define ASIO_PEER_TO_PEER_CLAIM_HPP
 
 enum class Claim {
-	leader, follower, undecided
+	leader, follower, undecided, force_revote
 };
 
 #endif // ASIO_PEER_TO_PEER_CLAIM_HPP
