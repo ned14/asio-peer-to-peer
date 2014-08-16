@@ -13,12 +13,13 @@ sources = [
 	'claim.cpp',
 	'leader_selection.cpp',
 	'main.cpp',
+	'node.cpp',
 ]
 
 programs = [
 	Program(
 		name = 'asio-peer-to-peer',
 		sources = sources,
-		libraries = [],
+		libraries = ['boost_system'],
 	),
 ]

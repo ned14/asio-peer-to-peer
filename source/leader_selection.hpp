@@ -13,9 +13,7 @@
 #include <vector>
 
 #include "claim.hpp"
-
-class Node {
-};
+#include "node.hpp"
 
 Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engine);
 

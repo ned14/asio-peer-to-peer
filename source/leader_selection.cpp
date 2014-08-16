@@ -22,35 +22,34 @@ using ScoreDistribution = std::uniform_real_distribution<Score>;
 
 using Contenders = std::vector<std::reference_wrapper<Node>>;
 
-void send_score(Node const & neighbor, Score const score) {
-}
-
 void send_score(Contenders const & contenders, Score const my_score) {
-	for (auto const & contender : contenders)
-	{
-		send_score(contender, my_score);
+	for (auto const & contender : contenders) {
+		contender.get().send(my_score);
 	}
 }
 
-void send_claim(Node & neighbor, Claim const claim) {
+void send_claim(Contenders const & contenders, Claim const claim) {
+	for (auto const & contender : contenders) {
+		contender.get().send(static_cast<std::uint8_t>(claim));
+	}
 }
 
-bool lower_score_than_all_contenders(Contenders & contenders, Score const my_score) {
+bool lower_score_than_all_contenders(Contenders const & contenders, Score const my_score) {
 	return true;
 }
 
-bool received_claim_of_leader(Contenders & contenders) {
+bool received_claim_of_leader(Contenders const & contenders) {
 	return false;
 }
 
-void force_revote(Contenders & contenders) {
+void force_revote(Contenders const & contenders) {
 }
 
-bool received_revote_request(Contenders & contenders) {
+bool received_revote_request(Contenders const & contenders) {
 	return false;
 }
 
-void handle_conflicting_leader_claims(Contenders & contenders) {
+void handle_conflicting_leader_claims(Contenders const & contenders) {
 	// TODO: Should this force a revote among all of my neighbors, or just those
 	// still considered contenders?
 	force_revote(contenders);
@@ -80,9 +79,7 @@ Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engi
 		send_score(contenders, my_score);
 
 		bool const is_leader = lower_score_than_all_contenders(contenders, my_score);
-		for (auto & contender : contenders) {
-			send_claim(contender, is_leader ? Claim::leader : Claim::undecided);
-		}
+		send_claim(contenders, is_leader ? Claim::leader : Claim::undecided);
 		
 		bool const is_follower = received_claim_of_leader(contenders);
 		if (is_follower and is_leader) {
@@ -91,9 +88,7 @@ Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engi
 		}
 
 		// I cannot break out here because someone else may force a revote.
-		for (auto & contender : contenders) {
-			send_claim(contender, is_follower ? Claim::follower : Claim::undecided);
-		}
+		send_claim(contenders, is_follower ? Claim::follower : Claim::undecided);
 		
 		bool const revote_requested = received_revote_request(contenders);
 		
@@ -102,6 +97,7 @@ Claim leader_selection(std::vector<Node> & neighbors, std::mt19937 & random_engi
 		} else if (not revote_requested and is_follower) {
 			return Claim::follower;
 		} else {
+			// No need to remove leaders, since I know no neighbors are leaders
 			remove_followers(contenders);
 		}
 	}
