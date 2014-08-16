@@ -8,17 +8,27 @@
 #ifndef ASIO_PEER_TO_PEER_NODE_HPP
 #define ASIO_PEER_TO_PEER_NODE_HPP
 
+#include <cstdint>
 #include <type_traits>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 
+#include "claim.hpp"
+
 class Node {
 public:
 	Node(boost::asio::ip::tcp::socket socket):
 		m_socket(std::move(socket)) {
 	}
+	Claim claim() const {
+		return m_claim;
+	}
+	void receive_claim() {
+		m_claim = static_cast<Claim>(receive<std::uint8_t>());
+	}
+
 	template<typename T>
 	void send(T const number) {
 		static_assert(std::is_integral<T>::value, "Can only send integer values.");
@@ -36,6 +46,7 @@ public:
 	}
 private:
 	boost::asio::ip::tcp::socket m_socket;
+	Claim m_claim;
 };
 
 #endif // ASIO_PEER_TO_PEER_NODE_HPP

@@ -46,7 +46,14 @@ bool lower_score_than_all_contenders(Contenders const & contenders, Score const 
 }
 
 bool received_claim_of_leader(Contenders const & contenders) {
-	return false;
+	bool any_are_leader = false;
+	for (Node & node : contenders) {
+		node.receive_claim();
+		if (node.claim() == Claim::leader) {
+			any_are_leader = true;
+		}
+	}
+	return any_are_leader;
 }
 
 void force_revote(Contenders const & contenders) {
