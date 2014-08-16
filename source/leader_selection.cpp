@@ -14,9 +14,9 @@
 
 #include <boost/optional.hpp>
 
-namespace {
+#include "score.hpp"
 
-using Score = double;
+namespace {
 
 using ScoreDistribution = std::uniform_real_distribution<Score>;
 

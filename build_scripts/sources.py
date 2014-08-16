@@ -14,6 +14,7 @@ sources = [
 	'leader_selection.cpp',
 	'main.cpp',
 	'node.cpp',
+	'score.cpp',
 ]
 
 programs = [
