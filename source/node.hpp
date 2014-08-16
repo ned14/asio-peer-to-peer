@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 
 class Node {
@@ -23,6 +24,15 @@ public:
 		static_assert(std::is_integral<T>::value, "Can only send integer values.");
 		// TODO: endian conversions
 		boost::asio::write(m_socket, boost::asio::buffer(&number, sizeof(number)));
+	}
+	
+	template<typename T>
+	T read() {
+		static_assert(std::is_integral<T>::value, "Can only read integer values.");
+		// TODO: endian conversions
+		T value;
+		boost::asio::read(m_socket, boost::asio::buffer(&value, sizeof(value)));
+		return value;
 	}
 private:
 	boost::asio::ip::tcp::socket m_socket;

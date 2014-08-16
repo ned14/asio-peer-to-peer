@@ -7,12 +7,11 @@
 
 #include "leader_selection.hpp"
 
-#include <cmath>
 #include <limits>
 #include <random>
 #include <vector>
 
-#include <boost/optional.hpp>
+#include <boost/range/numeric.hpp>
 
 #include "score.hpp"
 
@@ -23,19 +22,27 @@ using ScoreDistribution = std::uniform_int_distribution<Score>;
 using Contenders = std::vector<std::reference_wrapper<Node>>;
 
 void send_score(Contenders const & contenders, Score const my_score) {
-	for (auto const & contender : contenders) {
+	for (auto contender : contenders) {
 		contender.get().send(my_score);
 	}
 }
 
 void send_claim(Contenders const & contenders, Claim const claim) {
-	for (auto const & contender : contenders) {
+	for (auto contender : contenders) {
 		contender.get().send(static_cast<std::uint8_t>(claim));
 	}
 }
 
 bool lower_score_than_all_contenders(Contenders const & contenders, Score const my_score) {
-	return true;
+	// This cannot break out early because we still have to clear the read
+	// buffer for all of the contenders.
+	//
+	// TODO: consider making this asynchronous?
+	if (contenders.empty()) {
+		return true;
+	}
+	auto const least_score = [](Score const least, Node & node) { return std::min(least, node.read<Score>()); };
+	return my_score <= boost::accumulate(contenders, std::numeric_limits<Score>::max(), least_score);
 }
 
 bool received_claim_of_leader(Contenders const & contenders) {
