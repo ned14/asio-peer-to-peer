@@ -11,6 +11,7 @@
 #include <random>
 #include <vector>
 
+#include <boost/range/algorithm_ext/erase.hpp>
 #include <boost/range/numeric.hpp>
 
 #include "score.hpp"
@@ -81,6 +82,7 @@ void handle_conflicting_leader_claims(Contenders const & contenders) {
 }
 
 void remove_followers(Contenders & contenders) {
+	boost::remove_erase_if(contenders, [](Node const & node) { return node.claim() == Claim::follower; });
 }
 
 }	// namespace
