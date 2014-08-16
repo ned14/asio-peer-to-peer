@@ -27,7 +27,7 @@ public:
 	}
 	
 	template<typename T>
-	T read() {
+	T receive() {
 		static_assert(std::is_integral<T>::value, "Can only read integer values.");
 		// TODO: endian conversions
 		T value;

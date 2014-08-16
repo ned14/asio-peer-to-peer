@@ -41,7 +41,7 @@ bool lower_score_than_all_contenders(Contenders const & contenders, Score const 
 	if (contenders.empty()) {
 		return true;
 	}
-	auto const least_score = [](Score const least, Node & node) { return std::min(least, node.read<Score>()); };
+	auto const least_score = [](Score const least, Node & node) { return std::min(least, node.receive<Score>()); };
 	return my_score <= boost::accumulate(contenders, std::numeric_limits<Score>::max(), least_score);
 }
 
